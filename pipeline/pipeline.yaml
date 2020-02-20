@@ -1,0 +1,54 @@
+apiVersion: tekton.dev/v1alpha1
+kind: Pipeline
+metadata:
+  name: build-and-deploy
+spec:
+  resources:
+    - name: ui-repo
+      type: git
+    - name: ui-image
+      type: image
+  params:
+    - name: manifest_dir
+      type: string
+      description: Path to context yamls
+      default: k8s
+
+  tasks:
+    - name: build-ui
+      taskRef:
+        name: buildah
+        kind: ClusterTask
+      resources:
+        inputs:
+          - name: source
+            resource: ui-repo
+        outputs:
+          - name: image
+            resource: ui-image
+      params:
+        - name: TLSVERIFY
+          value: "false"
+
+    - name: apply-ui-manifests
+      taskRef:
+        name: apply-manifests
+      resources:
+        inputs:
+          - name: source
+            resource: ui-repo
+      runAfter:
+        - build-ui
+
+    - name: update-ui-image
+      taskRef:
+        name: update-deployment
+      resources:
+        inputs:
+          - name: image
+            resource: ui-image
+      params:
+        - name: deployment
+          value: "ui"
+      runAfter:
+        - apply-ui-manifests

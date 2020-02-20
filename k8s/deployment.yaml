@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  # reger
+  labels:
+    app: ui
+  name: ui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ui
+  template:
+    metadata:
+      labels:
+        app: ui
+    spec:
+      containers:
+        - image: fake-registry/fake-repo/invalid-image
+          imagePullPolicy: Always
+          name: ui
+          ports:
+            - containerPort: 3000

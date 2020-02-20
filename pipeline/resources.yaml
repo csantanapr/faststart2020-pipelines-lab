@@ -1,0 +1,22 @@
+---
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  name: ui-repo
+spec:
+  type: git
+  params:
+    - name: url
+      value: https://github.com/csantanapr/openshift-pipeline-nodejs-tutorial
+    - name: revision
+      value: master
+---
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  name: ui-image
+spec:
+  type: image
+  params:
+    - name: url
+      value: image-registry.openshift-image-registry.svc:5000/pipelines-tutorial/ui:latest
