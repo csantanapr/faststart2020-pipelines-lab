@@ -1,5 +1,21 @@
 # OpenShift Pipelines Node.js Tutorial
 
+- [OpenShift Pipelines Node.js Tutorial](#openshift-pipelines-nodejs-tutorial)
+  * [Prerequisites](#prerequisites)
+    + [Option 1 (learn openshift)](#option-1-learn-openshift)
+    + [Option 2 (CRC)](#option-2-crc)
+    + [Install the Tekton CLI](#install-the-tekton-cli)
+    + [Get the tutorial](#get-the-tutorial)
+  * [Run Application in a Container](#run-application-in-a-container)
+    + [Build Container Image](#build-container-image)
+    + [Run Container](#run-container)
+  * [Pipeline Concepts](#pipeline-concepts)
+  * [Install OpenShift Pipelines](#install-openshift-pipelines)
+  * [Deploy Sample Application](#deploy-sample-application)
+  * [Install Tasks](#install-tasks)
+  * [Create Pipeline](#create-pipeline)
+  * [Trigger Pipeline](#trigger-pipeline)
+
 Welcome to the OpenShift Pipelines tutorial!
 
 OpenShift Pipelines is a cloud-native, continuous integration and delivery (CI/CD) solution for building pipelines using [Tekton](https://tekton.dev). Tekton is a flexible, Kubernetes-native, open-source CI/CD framework that enables automating deployments across multiple platforms (Kubernetes, serverless, VMs, etc) by abstracting away the underlying details.
@@ -18,22 +34,6 @@ OpenShift Pipelines features:
 This tutorial walks you through pipeline concepts and how to create and run a simple pipeline for building and deploying a containerized app on OpenShift.
 
 In this tutorial you will:
-
-- [OpenShift Pipelines Node.js Tutorial](#openshift-pipelines-nodejs-tutorial)
-  * [Prerequisites](#prerequisites)
-    + [Option 1 (CRC)](#option-1--crc-)
-    + [Option 2 (learn openshift)](#option-2--learn-openshift-)
-    + [Install the Tekton CLI](#install-the-tekton-cli)
-  * [Create Application](#create-application)
-  * [Run Application in a Container](#run-application-in-a-container)
-    + [Build Container Image](#build-container-image)
-    + [Run Container](#run-container)
-  * [Pipeline Concepts](#pipeline-concepts)
-  * [Install OpenShift Pipelines](#install-openshift-pipelines)
-  * [Deploy Sample Application](#deploy-sample-application)
-  * [Install Tasks](#install-tasks)
-  * [Create Pipeline](#create-pipeline)
-  * [Trigger Pipeline](#trigger-pipeline)
 
 ## Prerequisites
 
