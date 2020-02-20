@@ -79,6 +79,21 @@ Check the version is `4.2+`
 
 You will also use the Tekton CLI (`tkn`) through out this tutorial. Download the Tekton CLI by following [instructions](https://github.com/tektoncd/cli#installing-tkn) available on the CLI GitHub repository.
 
+For MacOS
+```bash
+curl -LO https://github.com/tektoncd/cli/releases/download/v0.7.1/tkn_0.7.1_Darwin_x86_64.tar.gz
+# Extract tkn to your PATH (e.g. /usr/local/bin)
+tar xvzf tkn_0.7.1_Darwin_x86_64.tar.gz -C /usr/local/bin tkn
+chmod +x /usr/local/bin/tkn
+```
+
+For Linux
+```
+curl -LO https://github.com/tektoncd/cli/releases/download/v0.7.1/tkn_0.7.1_Linux_x86_64.tar.gz
+tar xvzf tkn_0.7.1_Linux_x86_64.tar.gz -C /usr/local/bin tkn
+chmod +x /usr/local/bin/tkn
+```
+
 Verify version
 ```bash
 tkn version
