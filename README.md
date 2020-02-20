@@ -209,19 +209,19 @@ OpenShift Pipelines is provided as an add-on on top of OpenShift that can be ins
 You can install the Operator from the CLI with the following command:
 
 ```bash
-oc create -f https://raw.githubusercontent.com/csantanapr/faststart2020-pipelines-lab/master/pipeline/subscription.yaml
+oc create -f pipeline/subscription.yaml
 ```
 
 You can verify Pipelines control plane is running in the namespace `openshift-pipelines`
 
 ```bash
-oc get deployments -n openshift-pipelines -w
+oc get pods -n openshift-pipelines
 ```
 
 ```bash
-NAME                          READY   UP-TO-DATE   AVAILABLE   AGE
-tekton-pipelines-controller   1/1     1            1           38s
-tekton-pipelines-webhook      1/1     1            1           37s
+NAME                                           READY   STATUS    RESTARTS   AGE
+tekton-pipelines-controller-7b6648dc8d-469g6   1/1     Running   0          2m
+tekton-pipelines-webhook-65856dff6c-qdl99      1/1     Running   0          2m
 ```
 
 An alternative to the CLI installation you can use the OpenShift Console UI, follow [these instructions](install-operator.md) in order to install OpenShift Pipelines on OpenShift via the OperatorHub.
@@ -255,26 +255,49 @@ Make sure you are on the `pipelines-tutorial` project by selecting it from the *
 
 Tasks consist of a number of steps that are executed sequentially. Each task is executed in a separate container within the same pod. They can also have inputs and outputs in order to interact with other tasks in the pipeline.
 
-Here is an example of a Maven task for building a Maven-based Java application:
+Here is an example of a ArgoCD task to sync and wait for an application update:
 
 ```yaml
 apiVersion: tekton.dev/v1alpha1
 kind: Task
 metadata:
-  name: maven-build
+  name: argocd-task-sync-and-wait
 spec:
   inputs:
-    resources:
-      - name: workspace-git
-        targetPath: /
-        type: git
+    params:
+      - name: application-name
+        description: name of the application to sync
+      - name: revision
+        description: the revision to sync to
+        default: HEAD
+      - name: flags
+        default: --
+      - name: argocd-version
+        default: v1.0.2
+  stepTemplate:
+    envFrom:
+      - configMapRef:
+          name: argocd-env-configmap  # used for server address
+      - secretRef:
+          name: argocd-env-secret  # used for authentication (username/password or auth token)
   steps:
-    - name: build
-      image: maven:3.6.0-jdk-8-slim
-      command:
-        - /usr/bin/mvn
+    - name: login
+      image: argoproj/argocd:$(inputs.params.argocd-version)
+      command: ["/bin/bash", "-c"]
       args:
-        - install
+        - if [ -z $ARGOCD_AUTH_TOKEN ]; then
+            yes | argocd login $ARGOCD_SERVER --username=$ARGOCD_USERNAME --password=$ARGOCD_PASSWORD;
+          fi
+    - name: sync
+      image: argoproj/argocd:$(inputs.params.argocd-version)
+      command: ["/bin/bash", "-c"]
+      args:
+        - argocd app sync $(inputs.params.application-name) --revision $(inputs.params.revision) $(inputs.params.flags)
+    - name: wait
+      image: argoproj/argocd:$(inputs.params.argocd-version)
+      command: ["/bin/bash", "-c"]
+      args:
+        - argocd app wait $(inputs.params.application-name) --health $(inputs.params.flags)ß
 ```
 
 When a task starts running, it starts a pod and runs each step sequentially in a separate container on the same pod. This task happens to have a single step, but tasks can have multiple steps, and, since they run within the same pod, they have access to the same volumes in order to cache files, access configmaps, secrets, etc. As mentioned previously, tasks can receive inputs (e.g. a git repository) and produce outputs (e.g. an image in a registry).
@@ -284,11 +307,11 @@ Note that only the requirement for a git repository is declared on the task and 
 Install the `apply-manifests` and `update-deployment` tasks from the repository using `oc` or `kubectl`, which you will need for creating a pipeline in the next section:
 
 ```bash
-oc create -f https://raw.githubusercontent.com/csantanapr/faststart2020-pipelines-lab/master/pipeline/update_deployment_task.yaml
+oc create -f pipeline/update_deployment_task.yaml
 ```
 
 ```
-oc create -f https://raw.githubusercontent.com/csantanapr/faststart2020-pipelines-lab/master/pipeline/apply_manifest_task.yaml
+oc create -f pipeline/apply_manifest_task.yaml
 ```
 
 The `apply-manifests` task uses the directory [k8s/](./k8s) as default location for the Kubernetes YAML manifests to configure the Kubernetes resources. In this case we are building a `Deployment`, `Service`, and `Route`. We use an invalid placeholder image in [deployment.yaml](./k8s/deployment.yaml) so that Tekton does not deploy an application until the correct image is configured. The `update-deployment` task, when run after `apply-manifests`, will then patch the correct image into the deployment.
@@ -406,7 +429,7 @@ The execution order of task is determined by dependencies that are defined betwe
 Create the pipeline by running the following:
 
 ```bash
-oc create -f https://raw.githubusercontent.com/csantanapr/faststart2020-pipelines-lab/master/pipeline/pipeline.yaml
+oc create -f pipeline/pipeline.yaml
 ```
 
 Alternatively, in the OpenShift web console, you can click on the **+** at the top right of the screen while you are in the **pipelines-tutorial** project:
@@ -464,7 +487,7 @@ spec:
 Create the above pipeline resources via the OpenShift web console or by running the following:
 
 ```bash
-oc create -f https://raw.githubusercontent.com/csantanapr/faststart2020-pipelines-lab/master/pipeline/resources.yaml
+oc create -f pipeline/resources.yaml
 ```
 
 > **Note** :-
