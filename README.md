@@ -1,13 +1,5 @@
 # OpenShift Pipelines Node.js Tutorial
 
-You can use this repository as a template to create your own github repository.
-
-![Github Template](images/github-use-template.png)
-
-Take into account you will need to adjust the tutorial files to point to your new github repository url,
-you can replace the git url in the file [pipeline/resources.yaml](pipeline/resources.yaml).
-Also if you want to deploy to a different namespace than `pipelines-tutorial` on OpenShift, you need to adjust the image url to use a different namespace, replace `pipelines-tutorial` in image url in the file [pipeline/resources.yaml](pipeline/resources.yaml).
-
 Welcome to the OpenShift Pipelines tutorial!
 
 OpenShift Pipelines is a cloud-native, continuous integration and delivery (CI/CD) solution for building pipelines using [Tekton](https://tekton.dev). Tekton is a flexible, Kubernetes-native, open-source CI/CD framework that enables automating deployments across multiple platforms (Kubernetes, serverless, VMs, etc) by abstracting away the underlying details.
@@ -27,62 +19,88 @@ This tutorial walks you through pipeline concepts and how to create and run a si
 
 In this tutorial you will:
 
--   [Create Application](#create-app)
--   [Run Application](#run-app)
--   [Build Container Image](#build-container-image)
--   [Run Container](#run-container)
--   [Run Application](#run-app)
--   [Learn about Tekton concepts](#pipeline-concepts)
--   [Install OpenShift Pipelines](#install-openshift-pipelines)
--   [Deploy a Sample Application](#deploy-sample-application)
--   [Install Tasks](#install-tasks)
--   [Create a Pipeline](#create-pipeline)
--   [Trigger a Pipeline](#trigger-pipeline)
+- [OpenShift Pipelines Node.js Tutorial](#openshift-pipelines-nodejs-tutorial)
+  * [Prerequisites](#prerequisites)
+    + [Option 1 (CRC)](#option-1--crc-)
+    + [Option 2 (learn openshift)](#option-2--learn-openshift-)
+    + [Install the Tekton CLI](#install-the-tekton-cli)
+  * [Create Application](#create-application)
+  * [Run Application in a Container](#run-application-in-a-container)
+    + [Build Container Image](#build-container-image)
+    + [Run Container](#run-container)
+  * [Pipeline Concepts](#pipeline-concepts)
+  * [Install OpenShift Pipelines](#install-openshift-pipelines)
+  * [Deploy Sample Application](#deploy-sample-application)
+  * [Install Tasks](#install-tasks)
+  * [Create Pipeline](#create-pipeline)
+  * [Trigger Pipeline](#trigger-pipeline)
 
 ## Prerequisites
 
 You need an OpenShift 4 cluster in order to complete this tutorial.
+
+### Option 1 (learn openshift)
+You can use  a cluster from Learn OpenShift [OpenShift 4 Cluster Playground](https://learn.openshift.com/playgrounds/openshift42/)
+
+Download oc from https://mirror.openshift.com/pub/openshift-v4/clients/oc/4.2/
+
+Get the `oc` login command by login into the Console as `admin` then copy the command into the terminal
+
+
+### Option 2 (CRC)
 You can use the CodeReady Containers to run OpenShift on your workstation.
 Follow the instructions [Installing CodeReady Containers](https://code-ready.github.io/crc/#installing-codeready-containers_gsg)
 
+If using CRC, you need to run setup once:
+
+```bash
+crc setup
+```
+
+Then start using the `crc start` you can pass the pull secret file as a parameter the first time you run the command.
+
+```bash
+crc start -p ~/Downloads/pull-secret.txt
+```
+
+To access the OpenShift Console on CRC use the command
+
+```bash
+crc console
+```
+
+Setup the `oc` CLI for OpenShfit 4
+```
+eval $(crc oc-env)
+```
+Check the version is `4.2+`
+
+### Install the Tekton CLI
+
 You will also use the Tekton CLI (`tkn`) through out this tutorial. Download the Tekton CLI by following [instructions](https://github.com/tektoncd/cli#installing-tkn) available on the CLI GitHub repository.
 
-## Create Application
-
-You can use an existing Node.js application and copy the source code to the `src` directory, or create a new one.
-
-The `src` directory on this repository already contains an application that was created using the [expressjs](https://expressjs.com/) framework:
-
+Verify version
 ```bash
-npx express-generator --view=pug src
+tkn version
+```
+Should be version `0.7.1`
+```
+Client version: 0.7.1
+```
+If you have an old version upgrade
+```bash
+brew upgrade tektoncd/tools/tektoncd-cli
 ```
 
-## Run Application
+### Get the tutorial
 
-If you have Node.js install you can go ahead and run the application
-
-Change directory:
-
+- Clone the Repository
 ```bash
-cd src
+git clone https://github.com/csantanapr/faststart2020-pipelines-lab.git
 ```
-
-Install dependencies:
-
+- Change directory
 ```bash
-npm install
-```
-
-Run the app:
-
-```bash
-DEBUG=src:* npm start
-```
-
-You can access the application on `locahost:3000` with `curl` or your browser
-
-```bash
-open http://localhost:3000
+cd faststart2020-pipelines-lab/
 ```
 
 ## Run Application in a Container
@@ -118,10 +136,8 @@ Having a change for dependencies such as updating the files `src/package.*.json`
 
 To be able to build the container image you will need a tool such as Docker Desktop that includes the docker CLI.
 
-Change current directory to the root directory where the `Dockerfile` is located
-
+- Verify `Dockerfile` is present in current directory
 ```bash
-cd ..
 ls Dockerfile
 ```
 
@@ -172,30 +188,6 @@ For further details on pipeline concepts, refer to the [Tekton documentation](ht
 In the following sections, you will go through each of the above steps to define and invoke a pipeline.
 
 ## Install OpenShift Pipelines
-
-If using CRC, you need to run setup once:
-
-```bash
-crc setup
-```
-
-Then start using the `crc start` you can pass the pull secret file as a parameter the first time you run the command.
-
-```bash
-crc start -p ~/Downloads/pull-secret.txt
-```
-
-To access the OpenShift Console on CRC use the command
-
-```bash
-crc console
-```
-
-When you are done using CRC you can stop it to reclaim workstation resources
-
-```bash
-crc stop
-```
 
 OpenShift Pipelines is provided as an add-on on top of OpenShift that can be installed via an operator available in the OpenShift OperatorHub.
 
@@ -278,6 +270,9 @@ Install the `apply-manifests` and `update-deployment` tasks from the repository 
 
 ```bash
 oc create -f https://raw.githubusercontent.com/csantanapr/openshift-pipeline-nodejs-tutorial/master/pipeline/update_deployment_task.yaml
+```
+
+```
 oc create -f https://raw.githubusercontent.com/csantanapr/openshift-pipeline-nodejs-tutorial/master/pipeline/apply_manifest_task.yaml
 ```
 
