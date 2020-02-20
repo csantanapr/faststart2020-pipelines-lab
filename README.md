@@ -539,5 +539,5 @@ oc get route ui --template='http://{{.spec.host}}'
 If you want to re-run the pipeline again, you can use the following short-hand command to rerun the last `PipelineRun` again that uses the same pipeline resources and service account used in the previous pipeline run:
 
 ```bash
-tkn pipeline start build-and-deploy --last
+tkn pipeline start build-and-deploy --last --showlog
 ```
