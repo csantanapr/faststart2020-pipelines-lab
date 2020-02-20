@@ -194,13 +194,13 @@ OpenShift Pipelines is provided as an add-on on top of OpenShift that can be ins
 You can install the Operator from the CLI with the following command:
 
 ```bash
-oc create -f https://raw.githubusercontent.com/csantanapr/openshift-pipeline-nodejs-tutorial/master/pipeline/subscription.yaml
+oc create -f https://raw.githubusercontent.com/csantanapr/faststart2020-pipelines-lab/master/pipeline/subscription.yaml
 ```
 
 You can verify Pipelines control plane is running in the namespace `openshift-pipelines`
 
 ```bash
-oc get deployments -n openshift-pipelines
+oc get deployments -n openshift-pipelines -w
 ```
 
 ```bash
@@ -269,11 +269,11 @@ Note that only the requirement for a git repository is declared on the task and 
 Install the `apply-manifests` and `update-deployment` tasks from the repository using `oc` or `kubectl`, which you will need for creating a pipeline in the next section:
 
 ```bash
-oc create -f https://raw.githubusercontent.com/csantanapr/openshift-pipeline-nodejs-tutorial/master/pipeline/update_deployment_task.yaml
+oc create -f https://raw.githubusercontent.com/csantanapr/faststart2020-pipelines-lab/master/pipeline/update_deployment_task.yaml
 ```
 
 ```
-oc create -f https://raw.githubusercontent.com/csantanapr/openshift-pipeline-nodejs-tutorial/master/pipeline/apply_manifest_task.yaml
+oc create -f https://raw.githubusercontent.com/csantanapr/faststart2020-pipelines-lab/master/pipeline/apply_manifest_task.yaml
 ```
 
 The `apply-manifests` task uses the directory [k8s/](./k8s) as default location for the Kubernetes YAML manifests to configure the Kubernetes resources. In this case we are building a `Deployment`, `Service`, and `Route`. We use an invalid placeholder image in [deployment.yaml](./k8s/deployment.yaml) so that Tekton does not deploy an application until the correct image is configured. The `update-deployment` task, when run after `apply-manifests`, will then patch the correct image into the deployment.
@@ -391,7 +391,7 @@ The execution order of task is determined by dependencies that are defined betwe
 Create the pipeline by running the following:
 
 ```bash
-oc create -f https://raw.githubusercontent.com/csantanapr/openshift-pipeline-nodejs-tutorial/master/pipeline/pipeline.yaml
+oc create -f https://raw.githubusercontent.com/csantanapr/faststart2020-pipelines-lab/master/pipeline/pipeline.yaml
 ```
 
 Alternatively, in the OpenShift web console, you can click on the **+** at the top right of the screen while you are in the **pipelines-tutorial** project:
@@ -427,7 +427,7 @@ spec:
   type: git
   params:
     - name: url
-      value: https://github.com/csantanapr/openshift-pipeline-nodejs-tutorial
+      value: https://github.com/csantanapr/faststart2020-pipelines-lab
     - name: revision
       value: master
 ```
@@ -449,7 +449,7 @@ spec:
 Create the above pipeline resources via the OpenShift web console or by running the following:
 
 ```bash
-oc create -f https://raw.githubusercontent.com/csantanapr/openshift-pipeline-nodejs-tutorial/master/pipeline/resources.yaml
+oc create -f https://raw.githubusercontent.com/csantanapr/faststart2020-pipelines-lab/master/pipeline/resources.yaml
 ```
 
 > **Note** :-
@@ -467,7 +467,7 @@ tkn resource ls
 
 ```bash
 NAME       TYPE    DETAILS
-ui-repo    git     url: https://github.com/csantanapr/openshift-pipeline-nodejs-tutorial
+ui-repo    git     url: https://github.com/csantanapr/faststart2020-pipelines-lab
 ui-image   image   url: image-registry.openshift-image-registry.svc:5000/pipelines-tutorial/ui:latest
 ```
 
@@ -478,7 +478,7 @@ tkn pipeline start build-and-deploy -s pipeline
 ```
 
 ```bash
-? Choose the git resource to use for ui-repo: ui-repo (https://github.com/csantanapr/openshift-pipeline-nodejs-tutorial)
+? Choose the git resource to use for ui-repo: ui-repo (https://github.com/csantanapr/faststart2020-pipelines-lab)
 ? Choose the image resource to use for ui-image: ui-image (image-registry.openshift-image-registry.svc:5000/pipelines-tutorial/ui:latest)
 Pipelinerun started: build-and-deploy-run-z2rz8
 Showing logs...
