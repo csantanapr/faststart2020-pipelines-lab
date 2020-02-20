@@ -297,7 +297,7 @@ spec:
       image: argoproj/argocd:$(inputs.params.argocd-version)
       command: ["/bin/bash", "-c"]
       args:
-        - argocd app wait $(inputs.params.application-name) --health $(inputs.params.flags)ß
+        - argocd app wait $(inputs.params.application-name) --health $(inputs.params.flags)
 ```
 
 When a task starts running, it starts a pod and runs each step sequentially in a separate container on the same pod. This task happens to have a single step, but tasks can have multiple steps, and, since they run within the same pod, they have access to the same volumes in order to cache files, access configmaps, secrets, etc. As mentioned previously, tasks can receive inputs (e.g. a git repository) and produce outputs (e.g. an image in a registry).
