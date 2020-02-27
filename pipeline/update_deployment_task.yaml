@@ -17,5 +17,5 @@ spec:
       command: ["/bin/bash", "-c"]
       args:
         - |-
-          oc delete pod app=ui
+          oc delete pod -l app=ui
           oc set image deployment/$(inputs.params.deployment) "$(inputs.params.deployment)=$(inputs.resources.image.url)"
