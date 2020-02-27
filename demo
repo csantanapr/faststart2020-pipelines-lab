@@ -90,6 +90,7 @@ demo.run() {
     -r ui-repo=ui-repo \
     -r ui-image=ui-image \
     -p manifest_dir=k8s \
+    --showlog \
     -s pipeline
 }
 
