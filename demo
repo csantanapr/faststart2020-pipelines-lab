@@ -67,11 +67,10 @@ demo.setup() {
   }
 
   info "Apply pipeline tasks"
-  OC apply -f pipeline/apply_manifest_task.yaml
-  OC apply -f pipeline/update_deployment_task.yaml
+  OC apply -f pipeline/build-ui.yaml
 
   info "Applying resources"
-  sed -e "s|pipelines-tutorial|$NAMESPACE|g" pipeline/resources.yaml | OC apply -f -
+  OC apply -f pipeline/resources.yaml
 
   info "Applying pipeline"
   OC apply -f pipeline/pipeline.yaml
