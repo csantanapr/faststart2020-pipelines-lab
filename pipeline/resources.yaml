@@ -19,4 +19,4 @@ spec:
   type: image
   params:
     - name: url
-      value: image-registry.openshift-image-registry.svc:5000/pipelines-tutorial/ui:latest
+      value: image-registry.openshift-image-registry.svc:5000/$NAMESPACE/ui

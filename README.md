@@ -304,20 +304,16 @@ When a task starts running, it starts a pod and runs each step sequentially in a
 
 Note that only the requirement for a git repository is declared on the task and not a specific git repository to be used. That allows tasks to be reusable for multiple pipelines and purposes. You can find more examples of reusable tasks in the [Tekton Catalog](https://github.com/tektoncd/catalog) and [OpenShift Catalog](https://github.com/openshift/pipelines-catalog) repositories.
 
-Install the `apply-manifests` and `update-deployment` tasks from the repository using `oc` or `kubectl`, which you will need for creating a pipeline in the next section:
+Install the `build-ui` task from the repository using `oc` or `kubectl`, which you will need for creating a pipeline in the next section:
 
 ```bash
-oc create -f pipeline/update_deployment_task.yaml
+oc create -f pipeline/build-ui.yaml
 ```
 
-```
-oc create -f pipeline/apply_manifest_task.yaml
-```
-
-The `apply-manifests` task uses the directory [k8s/](./k8s) as default location for the Kubernetes YAML manifests to configure the Kubernetes resources. In this case we are building a `Deployment`, `Service`, and `Route`. We use an invalid placeholder image in [deployment.yaml](./k8s/deployment.yaml) so that Tekton does not deploy an application until the correct image is configured. The `update-deployment` task, when run after `apply-manifests`, will then patch the correct image into the deployment.
+The `build-ui` task uses the directory [k8s/](./k8s) as default location for the Kubernetes YAML manifests to configure the Kubernetes resources. In this case we are building a `Deployment`, `Service`, and `Route`. We use an invalid placeholder image in [deployment.yaml](./k8s/deployment.yaml) so that Tekton does not deploy an application until the correct image is configured. The step `oc-deploy`in the task, when run after `build-image`, will then set the correct image into the deployment.
 
 
-You can take a look at the tasks you created using the [Tekton CLI](https://github.com/tektoncd/cli/releases):
+You can take a look at the task you created using the [Tekton CLI](https://github.com/tektoncd/cli/releases):
 
 ```bash
 tkn task ls
@@ -325,24 +321,10 @@ tkn task ls
 
 ```bash
 NAME                AGE
-apply-manifests     10 seconds ago
-update-deployment   4 seconds ago
+build-ui            10 seconds ago
 ```
 
-We will be using the `buildah` ClusterTask which gets installed along with the Operator. Operator installs a few ClusterTasks which you can see.
-
-```bash
-tkn clustertask ls
-```
-
-```bash
-NAME                      AGE
-buildah                   24 minutes ago
-buildah-v0-8-0            24 minutes ago
-openshift-client          24 minutes ago
-openshift-client-v0-8-0   24 minutes ago
-s2i                       24 minutes ago
-```
+We will be using the `buildah` in the task on the first step `build-image` the image url will be dynamically generated using the current namespace, and using the git repo commit HASH to use it as unique image tag.
 
 ## Create Pipeline
 
@@ -365,58 +347,42 @@ spec:
       type: git
     - name: ui-image
       type: image
+  params:
+    - name: manifest_dir
+      type: string
+      description: Path to context yamls
+      default: k8s
+    - name: deployment
+      type: string
+      description: The name of the deployment to patch the image
+      default: ui
 
   tasks:
     - name: build-ui
       taskRef:
-        name: buildah
-        kind: ClusterTask
+        name: build-ui
       resources:
         inputs:
           - name: source
             resource: ui-repo
-        outputs:
-          - name: image
-            resource: ui-image
-      params:
-        - name: TLSVERIFY
-          value: "false"
-
-    - name: apply-ui-manifests
-      taskRef:
-        name: apply-manifests
-      resources:
-        inputs:
-          - name: source
-            resource: ui-repo
-      runAfter:
-        - build-ui
-
-    - name: update-ui-image
-      taskRef:
-        name: update-deployment
-      resources:
-        inputs:
           - name: image
             resource: ui-image
       params:
         - name: deployment
-          value: "ui"
-      runAfter:
-        - apply-ui-manifests
-
+          value: "$(params.deployment)"
+        - name: manifest_dir
+          value: "$(params.manifest_dir)"
 ```
 
 This pipeline performs the following:
 
 1. Clones the source code of the frontend application from a git repository (`ui-repo` resource)
-2. Builds the container image using the `buildah` task that uses [Buildah](https://buildah.io/) to build the image
+2. Builds the container image using the `build-ui` task that uses [Buildah](https://buildah.io/) to build the image
 3. The application image is pushed to an image registry (`ui-image` resource)
-4. The `apply-manifests` task is run, thus creating a `Deployment`, `Service`, and `Route`
-5. The `update-ui-image` task patches the deployment to create pods with the `ui-image` resource, and the application is deployed
+4. The `oc-deploy` step in the task is run, thus creating a `Deployment`, `Service`, and `Route` and sets the new image for the container in the deployment.
 
 You might have noticed that there are no references to the git
-repository or the image registry it will be pushed to. That's because pipeline in Tekton
+repository or the image registry it will be pushed to in the Pipeline. That's because pipeline in Tekton
 are designed to be generic and re-usable across environments and stages through
 the application's lifecycle. Pipelines abstract away the specifics of the git
 source repository and image to be produced as `PipelineResources`. When triggering a
@@ -424,7 +390,6 @@ pipeline, you can provide different git repositories and image registries to be
 used during pipeline execution. Be patient! You will do that in a little bit in
 the next section.
 
-The execution order of task is determined by dependencies that are defined between the tasks via inputs and outputs as well as explicit orders that are defined via `runAfter`.
 
 Create the pipeline by running the following:
 
@@ -470,7 +435,7 @@ spec:
       value: master
 ```
 
-And the following defines the OpenShift internal image registry for the frontend image to be pushed to:
+And the following defines the OpenShift internal image registry for the frontend image to be pushed to. Notice that the the task will replace `$NAMESPACE` and will add the image tag (ie :12234) at the end of the image url:
 
 ```yaml
 apiVersion: tekton.dev/v1alpha1
@@ -481,7 +446,7 @@ spec:
   type: image
   params:
     - name: url
-      value: image-registry.openshift-image-registry.svc:5000/pipelines-tutorial/ui:latest
+      value: image-registry.openshift-image-registry.svc:5000/$NAMESPACE/ui
 ```
 
 Create the above pipeline resources via the OpenShift web console or by running the following:

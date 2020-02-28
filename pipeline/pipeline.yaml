@@ -13,42 +13,23 @@ spec:
       type: string
       description: Path to context yamls
       default: k8s
+    - name: deployment
+      type: string
+      description: The name of the deployment to patch the image
+      default: ui
 
   tasks:
     - name: build-ui
       taskRef:
-        name: buildah
-        kind: ClusterTask
+        name: build-ui
       resources:
         inputs:
           - name: source
             resource: ui-repo
-        outputs:
-          - name: image
-            resource: ui-image
-      params:
-        - name: TLSVERIFY
-          value: "false"
-
-    - name: apply-ui-manifests
-      taskRef:
-        name: apply-manifests
-      resources:
-        inputs:
-          - name: source
-            resource: ui-repo
-      runAfter:
-        - build-ui
-
-    - name: update-ui-image
-      taskRef:
-        name: update-deployment
-      resources:
-        inputs:
           - name: image
             resource: ui-image
       params:
         - name: deployment
-          value: "ui"
-      runAfter:
-        - apply-ui-manifests
+          value: "$(params.deployment)"
+        - name: manifest_dir
+          value: "$(params.manifest_dir)"
