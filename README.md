@@ -18,6 +18,10 @@
 
 Welcome to the OpenShift Pipelines tutorial!
 
+
+![Pipeline Diagram](images/pipeline-diagram.png)
+
+
 OpenShift Pipelines is a cloud-native, continuous integration and delivery (CI/CD) solution for building pipelines using [Tekton](https://tekton.dev). Tekton is a flexible, Kubernetes-native, open-source CI/CD framework that enables automating deployments across multiple platforms (Kubernetes, serverless, VMs, etc) by abstracting away the underlying details.
 
 OpenShift Pipelines features:
@@ -36,6 +40,10 @@ This tutorial walks you through pipeline concepts and how to create and run a si
 In this tutorial you will:
 
 ## Prerequisites
+
+You can use this repository as a template to create your own github repository.
+
+![Github Template](images/github-use-template.png)
 
 You need an OpenShift 4 cluster in order to complete this tutorial.
 
